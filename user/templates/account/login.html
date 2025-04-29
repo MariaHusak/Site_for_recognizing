@@ -1,9 +1,14 @@
+{% load static %}
+{% load i18n %}
+{% load account socialaccount %}
+
 <!DOCTYPE html>
 <html lang="en" class="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In</title>
+  <title>{% trans "Sign In" %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <style>
     /* Base Styles */
     :root {
@@ -348,6 +353,7 @@
       border: 1px solid var(--color-border);
       cursor: pointer;
       transition: background-color 0.3s;
+      text-decoration: none;
     }
 
     .dark .social-button {
@@ -413,21 +419,36 @@
 <body>
   <div class="app-container">
     <div class="background" id="background"></div>
-    
+
     <div class="login-card glass-card animate-fade-in">
-      <h1 class="form-heading animate-slide-up">Sign In</h1>
-      
-      <div id="general-error" class="error-message animate-fade-in" style="display: none;"></div>
-      
-      <form id="login-form" class="animate-slide-up">
+      <h1 class="form-heading animate-slide-up">{% trans "Sign In" %}</h1>
+
+      {% if form.errors %}
+      <div class="error-message animate-fade-in">
+        {% for field in form %}
+          {% for error in field.errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'account_login' %}" class="animate-slide-up">
+        {% csrf_token %}
+
         <div class="form-group">
           <div class="relative">
-            <input 
-              type="text" 
-              id="username" 
-              name="username" 
-              placeholder="Username" 
+            <input
+              type="text"
+              id="username"
+              name="login"
+              placeholder="{% trans 'Username' %}"
               class="input-field"
+              {% if form.login.value %}value="{{ form.login.value }}"{% endif %}
+              required
             >
             <span class="input-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -435,17 +456,20 @@
               </svg>
             </span>
           </div>
-          <p id="username-error" class="field-error" style="display: none;"></p>
+          {% if form.login.errors %}
+          <p class="field-error">{{ form.login.errors }}</p>
+          {% endif %}
         </div>
-        
+
         <div class="form-group">
           <div class="relative">
-            <input 
-              type="password" 
-              id="password" 
-              name="password" 
-              placeholder="Password" 
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="{% trans 'Password' %}"
               class="input-field"
+              required
             >
             <span class="input-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -453,37 +477,44 @@
               </svg>
             </span>
           </div>
-          <p id="password-error" class="field-error" style="display: none;"></p>
+          {% if form.password.errors %}
+          <p class="field-error">{{ form.password.errors }}</p>
+          {% endif %}
         </div>
-        
+
         <div class="flex items-center justify-between">
           <div class="checkbox-container">
-            <input 
-              type="checkbox" 
-              id="rememberMe" 
-              name="rememberMe" 
+            <input
+              type="checkbox"
+              id="rememberMe"
+              name="remember"
               class="checkbox"
             >
-            <label for="rememberMe" class="checkbox-label">Remember me</label>
+            <label for="rememberMe" class="checkbox-label">{% trans "Remember me" %}</label>
           </div>
-          <a href="#" class="forgot-password">Forgot Password?</a>
+          <a href="{% url 'account_reset_password' %}" class="forgot-password">{% trans "Forgot Password?" %}</a>
         </div>
-        
-        <button 
-          type="submit" 
-          class="button-primary submit-button" 
+
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+        {% endif %}
+
+        <button
+          type="submit"
+          class="button-primary submit-button"
           style="margin-top: 1rem;"
         >
-          Login
+          {% trans "Login" %}
         </button>
-        
+
+        {% if SOCIALACCOUNT_ENABLED %}
         <div class="divider">
           <div class="divider-line"></div>
-          <span class="divider-text">Or sign in with</span>
+          <span class="divider-text">{% trans "Or sign in with" %}</span>
           <div class="divider-line"></div>
         </div>
-        
-        <button type="button" class="social-button">
+
+        <a href="{% provider_login_url 'google' %}?next=/" class="social-button">
           <svg viewBox="0 0 24 24">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -502,16 +533,17 @@
               fill="#EA4335"
             />
           </svg>
-          Login with Google
-        </button>
-        
+          {% trans "Login with Google" %}
+        </a>
+        {% endif %}
+
         <p class="signup-text">
-          Don't have an account?
-          <a href="#" class="signup-link">Register</a>
+          {% trans "Don't have an account?" %}
+          <a href="{% url 'account_signup' %}" class="signup-link">{% trans "Sign up here" %}</a>
         </p>
       </form>
     </div>
-    
+
     <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
       <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
         <circle cx="12" cy="12" r="5"></circle>
@@ -537,112 +569,37 @@
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
     const background = document.getElementById('background');
-    
+
     // Set initial theme based on localStorage or default to light
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
-    
+
     // Theme toggle button click handler
     themeToggle.addEventListener('click', () => {
       const newTheme = html.classList.contains('dark') ? 'light' : 'dark';
       setTheme(newTheme);
       localStorage.setItem('theme', newTheme);
     });
-    
+
     function setTheme(theme) {
       // Update HTML class
       html.className = theme;
-      
+
       // Update icons visibility
       sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
       moonIcon.style.display = theme === 'light' ? 'block' : 'none';
-      
+
       // Update background
       updateBackground(theme);
     }
-    
+
     function updateBackground(theme) {
       // In a real app, these would be actual image paths
-      const bgImage = theme === 'light' 
-        ? 'url(https://source.unsplash.com/random/1920x1080/?day,nature)'
-        : 'url(https://source.unsplash.com/random/1920x1080/?night,sky)';
-        
+      const bgImage = theme === 'light'
+        ? 'url({% static "img/light-background.jpg" %})'
+        : 'url({% static "img/dark-background.jpg" %})';
+
       background.style.backgroundImage = bgImage;
-    }
-    
-    // Form Validation
-    const loginForm = document.getElementById('login-form');
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-    const usernameError = document.getElementById('username-error');
-    const passwordError = document.getElementById('password-error');
-    const generalError = document.getElementById('general-error');
-    
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      
-      // Reset errors
-      resetErrors();
-      
-      // Get form data
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value;
-      const rememberMe = document.getElementById('rememberMe').checked;
-      
-      // Validate form
-      let isValid = true;
-      
-      if (!username) {
-        showError(usernameInput, usernameError, 'Username is required');
-        isValid = false;
-      }
-      
-      if (!password) {
-        showError(passwordInput, passwordError, 'Password is required');
-        isValid = false;
-      } else if (password.length < 6) {
-        showError(passwordInput, passwordError, 'Password must be at least 6 characters');
-        isValid = false;
-      }
-      
-      if (isValid) {
-        // In a real app, this would be an API call
-        console.log('Form submitted:', { username, password, rememberMe });
-        
-        // Simulate authentication failure for demo purposes
-        showGeneralError('Invalid username or password. Please try again.');
-      }
-    });
-    
-    // Clear field errors when typing
-    usernameInput.addEventListener('input', () => {
-      clearError(usernameInput, usernameError);
-    });
-    
-    passwordInput.addEventListener('input', () => {
-      clearError(passwordInput, passwordError);
-    });
-    
-    function showError(input, errorElement, message) {
-      input.classList.add('error');
-      errorElement.textContent = message;
-      errorElement.style.display = 'block';
-    }
-    
-    function clearError(input, errorElement) {
-      input.classList.remove('error');
-      errorElement.style.display = 'none';
-    }
-    
-    function showGeneralError(message) {
-      generalError.textContent = message;
-      generalError.style.display = 'block';
-    }
-    
-    function resetErrors() {
-      clearError(usernameInput, usernameError);
-      clearError(passwordInput, passwordError);
-      generalError.style.display = 'none';
     }
   </script>
 </body>
