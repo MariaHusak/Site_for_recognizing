@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
 
     'user',
+    'uploading_data',
 
     'allauth',
     'allauth.account',

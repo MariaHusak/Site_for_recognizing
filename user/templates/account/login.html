@@ -2,7 +2,6 @@
 {% load i18n %}
 {% load account socialaccount %}
 
-<!DOCTYPE html>
 <html lang="en" class="light">
 <head>
   <meta charset="UTF-8">
@@ -29,6 +28,7 @@
       --color-blue-hover: #3b82f6;
       --color-card-background: rgba(255, 255, 255, 0.2);
       --color-card-border: rgba(255, 255, 255, 0.3);
+      --side-padding-color: #96C1B1; /* Light mode side padding color */
     }
 
     .dark {
@@ -49,6 +49,7 @@
       --color-blue-hover: #93c5fd;
       --color-card-background: rgba(17, 24, 39, 0.3);
       --color-card-border: rgba(55, 65, 81, 0.3);
+      --side-padding-color: #394876; /* Dark mode side padding color */
     }
 
     html {
@@ -63,9 +64,11 @@
       margin: 0;
       padding: 0;
       color: var(--color-text);
-      background-color: var(--color-background);
+      background-color: var(--side-padding-color); /* Use the padding color for the body background */
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      display: flex;
+      justify-content: center;
     }
 
     /* Custom scrollbar */
@@ -185,10 +188,12 @@
       position: relative;
       min-height: 100vh;
       width: 100%;
+      max-width: 1200px; /* Control the width of the center content */
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      background-color: var(--color-background);
     }
 
     .background {
@@ -370,9 +375,18 @@
     }
 
     .social-button svg {
-      height: 1.25rem;
+      min-width: 1.25rem;
       width: 1.25rem;
+      height: 1.25rem;
       margin-right: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .social-button-text {
+      /* Add this class to wrap the text */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .signup-text {
@@ -398,6 +412,10 @@
       .login-card {
         width: calc(100% - 2rem);
         padding: 1.5rem;
+      }
+
+      .social-button {
+        padding: 0.75rem 0.5rem;
       }
     }
 
@@ -533,7 +551,7 @@
               fill="#EA4335"
             />
           </svg>
-          {% trans "Login with Google" %}
+          <span class="social-button-text">{% trans "Login with Google" %}</span>
         </a>
         {% endif %}
 
@@ -596,8 +614,8 @@
     function updateBackground(theme) {
       // In a real app, these would be actual image paths
       const bgImage = theme === 'light'
-        ? 'url({% static "img/light-background.jpg" %})'
-        : 'url({% static "img/dark-background.jpg" %})';
+        ? 'url({% static "img/light-background.png" %})'
+        : 'url({% static "img/dark-background.png" %})';
 
       background.style.backgroundImage = bgImage;
     }
