@@ -129,3 +129,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'husakmaria74@gmail.com'
 EMAIL_HOST_PASSWORD = 'gzns kvwo aglb hkhk'
 DEFAULT_FROM_EMAIL = 'husakmaria74@gmail.com'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
